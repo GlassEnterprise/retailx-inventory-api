@@ -36,6 +36,14 @@ public class InventoryService {
     @Autowired
     private OrdersApiClient ordersApiClient;
     
+    public Product getInventory() {
+        return inventoryItemRepository.findAll().stream()
+                .map(productMapper::toDto)
+                .findFirst()
+                .orElse(null);
+    }
+    
+    
     public Product getInventory(int productId) {
         logger.info("Retrieving inventory for product: {}", productId);
         Optional<InventoryItem> inventoryItemOptional = inventoryItemRepository.findByProductId(productId);

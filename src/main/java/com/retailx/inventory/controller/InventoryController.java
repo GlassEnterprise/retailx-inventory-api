@@ -64,6 +64,32 @@ public class InventoryController {
             return ResponseEntity.internalServerError().build();
         }
     }
+    @GetMapping("/")
+    @Operation(summary = "Get product inventory", description = "Retrieve current stock information for a specific product")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved inventory information"),
+        @ApiResponse(responseCode = "404", description = "Product not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Product> getInventory(
+            ) {
+        
+        
+        try {
+            Product product = inventoryService.getInventory();
+            
+            if (product == null) {
+                logger.warn("Product not found:");
+                return ResponseEntity.notFound().build();
+            }
+            
+            logger.info("Successfully retrieved inventory for products");
+            return ResponseEntity.ok(product);
+            
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
     
     @PostMapping("/update")
     @Operation(summary = "Update product inventory", description = "Update stock level for a specific product")
