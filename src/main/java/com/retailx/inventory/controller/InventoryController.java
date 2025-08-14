@@ -65,7 +65,7 @@ public class InventoryController {
         }
     }
     @GetMapping("/")
-    @Operation(summary = "Get product inventory", description = "Retrieve current stock information for a specific product")
+    @Operation(summary = "Get products inventory", description = "Retrieve current stock information for a specific product")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved inventory information"),
         @ApiResponse(responseCode = "404", description = "Product not found"),
