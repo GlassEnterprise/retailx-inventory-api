@@ -1,6 +1,6 @@
 package com.retailx.inventory.controller;
 
-import com.retailx.inventory.model.InventoryResponse;
+import com.retailx.inventory.model.Product;
 import com.retailx.inventory.model.UpdateInventoryRequest;
 import com.retailx.inventory.service.InventoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,67 +42,44 @@ public class InventoryController {
         @ApiResponse(responseCode = "404", description = "Product not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<InventoryResponse> getInventory(
+    public ResponseEntity<Product> getInventory(
             @Parameter(description = "Product ID to retrieve inventory for", required = true)
-            @PathVariable String productId) {
+            @PathVariable int productId) {
         
         logger.info("GET /inventory/{} - Retrieving inventory information", productId);
         
         try {
-            InventoryResponse response = inventoryService.getInventory(productId);
+            Product product = inventoryService.getInventory(productId);
             
-            // TODO: Return 404 for products that don't exist
-            if ("NOT_FOUND".equals(response.getStatus())) {
+            if (product == null) {
                 logger.warn("Product not found: {}", productId);
                 return ResponseEntity.notFound().build();
             }
             
             logger.info("Successfully retrieved inventory for product: {}", productId);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(product);
             
         } catch (Exception e) {
-            // TODO: Add proper exception handling
             logger.error("Error retrieving inventory for product {}: {}", productId, e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
     
-    /**
-     * Update inventory stock level for a specific product
-     */
-    @PutMapping("/{productId}")
+    @PostMapping("/update")
     @Operation(summary = "Update product inventory", description = "Update stock level for a specific product")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully updated inventory"),
-        @ApiResponse(responseCode = "400", description = "Invalid request data"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Successfully updated inventory"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<InventoryResponse> updateInventory(
-            @Parameter(description = "Product ID to update inventory for", required = true)
-            @PathVariable String productId,
-            @Parameter(description = "Inventory update request", required = true)
-            @RequestBody UpdateInventoryRequest request) {
-        
-        logger.info("PUT /inventory/{} - Updating inventory with operation: {}", 
-                   productId, request.getOperation());
-        
+    public ResponseEntity<Void> updateInventory(@RequestBody UpdateInventoryRequest request) {
+        logger.info("POST /inventory/update - Updating inventory for product: {}", request.getProductId());
         try {
-            // TODO: Add request validation
-            if (request.getStockLevel() == null) {
-                logger.warn("Invalid request: stockLevel is required");
-                return ResponseEntity.badRequest().build();
-            }
-            
-            InventoryResponse response = inventoryService.updateInventory(productId, request);
-            
-            logger.info("Successfully updated inventory for product: {} to stock level: {}", 
-                       productId, response.getStockLevel());
-            
-            return ResponseEntity.ok(response);
-            
+            inventoryService.updateInventory(request);
+            logger.info("Successfully updated inventory for product: {}", request.getProductId());
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            // TODO: Add proper exception handling
-            logger.error("Error updating inventory for product {}: {}", productId, e.getMessage());
+            logger.error("Error updating inventory for product {}: {}", request.getProductId(), e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
